@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ระบบเงินเดือน</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { font-family:sans-serif; padding:20px; background:#f9f9f9; text-align:center; }
+select, input, button { padding:8px; margin:5px; }
+#result { margin-top:20px; background:white; padding:15px; border-radius:10px; }
+</style>
+</head>
+
+<body>
+
+<h2>💰 ระบบคำนวณเงินเดือน</h2>
+
+<!-- เลือกเดือน -->
+<select id="month">
+  <option value="เมษายน">เมษายน</option>
+  <option value="มีนาคม">มีนาคม</option>
+</select>
+
+<br>
+
+<!-- ใส่ชื่อพนักงาน -->
+<input type="text" id="staff" placeholder="ชื่อพนักงาน">
+
+<br>
+
+<button onclick="loadData()">คำนวณ</button>
+
+<div id="result"></div>
+
+<script>
+const API_URL = "PUT_YOUR_SCRIPT_URL_HERE";
+
+async function loadData(){
+
+  const month = document.getElementById("month").value;
+  const staff = document.getElementById("staff").value;
+
+  if (!staff) {
+    alert("กรุณาใส่ชื่อพนักงาน");
+    return;
+  }
+
+  document.getElementById("result").innerHTML = "กำลังโหลด...";
+
+  try {
+    const res = await fetch(`${API_URL}?month=${encodeURIComponent(month)}&staff=${encodeURIComponent(staff)}`);
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById("result").innerHTML = data.error;
+      return;
+    }
+
+    document.getElementById("result").innerHTML = `
+      👤 พนักงาน: ${data.staff}<br>
+      📅 เดือน: ${data.month}<br><br>
+
+      ⏱️ ชั่วโมงทำงาน: ${data.totalHours}<br>
+      🔥 OT: ${data.totalOT}<br>
+      💵 ยอดขาย: ${data.totalSales}<br><br>
+
+      💰 เงินเดือน: ${data.salary}<br>
+      🔥 ค่า OT: ${data.otPay}<br>
+      📈 ค่าคอม: ${data.commission}<br><br>
+
+      <h3>รวมทั้งหมด: ${data.total}</h3>
+    `;
+  } catch (err) {
+    document.getElementById("result").innerHTML = "โหลดข้อมูลผิดพลาด";
+  }
+}
+</script>
+
+</body>
+</html>
