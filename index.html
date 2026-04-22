@@ -10,6 +10,18 @@ table { width:100%; max-width:1000px; margin:auto; border-collapse:collapse; bac
 th,td { border:1px solid #ddd; padding:8px;}
 th { background:#4CAF50; color:white;}
 
+button {
+  padding:8px 12px;
+  margin:5px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.btn-main { background:#4CAF50; color:white;}
+.btn-emp { background:#2196F3; color:white;}
+.btn-export { background:#ff9800; color:white;}
+
 #loading {
   position:fixed;
   top:0; left:0;
@@ -28,17 +40,25 @@ th { background:#4CAF50; color:white;}
 
 <h2>💰 เงินเดือนทั้งร้าน</h2>
 
+<!-- 🔥 ปุ่มกลับมาแล้ว -->
+<button class="btn-main" onclick="loadData()">🔄 โหลดใหม่</button>
+<button class="btn-emp" onclick="goEmployee()">👩‍💼 พนักงาน</button>
+<button class="btn-export" onclick="exportCSV()">📥 Export</button>
+
+<br><br>
+
 <div id="loading">⏳ กำลังโหลด...</div>
 
 <table id="table"></table>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwZnndwHjzZlWYSXI39zyC42HHVfq9e2cHhj1ohR4TF23VAcWlxsCN7-CaID-LDV7F3/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwqqs8b6A3EZ39f7ClyrzahtAjrek3wMc6crdsGcoCW2a_ambOgvJcLBwdF47RzmfLc/exec";
 
 let loading = false;
 let dataGlobal = [];
 
-window.onload = loadData; // 🔥 โหลดอัตโนมัติ
+// 🔥 โหลดอัตโนมัติ
+window.onload = loadData;
 
 async function loadData(){
 
@@ -52,7 +72,6 @@ async function loadData(){
     const data = await res.json();
 
     dataGlobal = data;
-
     renderTable(data);
 
   } catch(err){
@@ -87,6 +106,23 @@ function renderTable(data){
 function goDetail(i){
   sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
   window.location.href = "ot.html";
+}
+
+function goEmployee(){
+  window.location.href = "employee.html";
+}
+
+function exportCSV(){
+  let csv="ชื่อ,ชั่วโมง,OT,ยอดขาย,รวม\n";
+  dataGlobal.forEach(d=>{
+    csv+=`${d.name},${d.hours},${d.otHours},${d.sales},${d.total}\n`;
+  });
+
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="payroll.csv";
+  a.click();
 }
 
 function format(n){
