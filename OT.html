@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>เช็ค OT</title>
+
+<style>
+body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
+table { width:100%; border-collapse:collapse; background:white;}
+th,td { border:1px solid #ddd; padding:8px; text-align:center;}
+th { background:#f44336; color:white;}
+</style>
+</head>
+
+<body>
+
+<h2>⏱️ รายละเอียด OT</h2>
+
+<button onclick="goBack()">⬅️ กลับ</button>
+
+<br><br>
+
+<div id="name"></div>
+
+<br>
+
+<table>
+<thead>
+<tr>
+<th>วันที่</th>
+<th>กะ</th>
+<th>ชั่วโมง</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<script>
+
+const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
+
+document.getElementById("name").innerHTML = `<b>${data.name}</b>`;
+
+function goBack(){
+  window.history.back();
+}
+
+// 🔥 group ตามวัน
+const grouped = {};
+
+(data.detail || []).forEach(d=>{
+  if (!grouped[d.date]){
+    grouped[d.date] = {
+      shifts:[],
+      total:0
+    };
+  }
+
+  grouped[d.date].shifts.push(d.shift);
+  grouped[d.date].total += d.hours;
+});
+
+// 🔥 render
+const tbody = document.getElementById("tableBody");
+
+tbody.innerHTML = Object.keys(grouped).map(date=>{
+
+  const d = grouped[date];
+
+  return `
+    <tr style="${d.total > 9 ? 'background:#ffe0e0;' : ''}">
+      <td>${date}</td>
+      <td>${d.shifts.join(", ")}</td>
+      <td>${d.total}</td>
+    </tr>
+  `;
+}).join("");
+
+</script>
+
+</body>
+</html>
