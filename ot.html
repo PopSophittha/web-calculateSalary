@@ -9,6 +9,15 @@ body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
 table { width:100%; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
+
+.warn { background:#ffe0e0; }
+
+.box {
+  margin-top:15px;
+  padding:10px;
+  background:#fff3cd;
+  border:1px solid #ffeeba;
+}
 </style>
 </head>
 
@@ -18,18 +27,16 @@ th { background:#f44336; color:white;}
 
 <button onclick="goBack()">⬅️ กลับ</button>
 
-<br><br>
+<h3 id="name"></h3>
 
-<div id="name"></div>
-
-<br>
+<div id="dupBox" class="box" style="display:none;"></div>
 
 <table>
 <thead>
 <tr>
 <th>วันที่</th>
 <th>กะ</th>
-<th>ชั่วโมง</th>
+<th>ชั่วโมงรวม</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -37,18 +44,21 @@ th { background:#f44336; color:white;}
 
 <script>
 
-const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
-
-document.getElementById("name").innerHTML = `<b>${data.name}</b>`;
-
 function goBack(){
   window.history.back();
 }
 
-// 🔥 group ตามวัน
+const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
+const duplicates = JSON.parse(sessionStorage.getItem("duplicates") || "[]");
+
+document.getElementById("name").innerText = data.name || "-";
+
+// 🔥 กัน detail หาย
+const detail = Array.isArray(data.detail) ? data.detail : [];
+
 const grouped = {};
 
-(data.detail || []).forEach(d=>{
+detail.forEach(d=>{
   if (!grouped[d.date]){
     grouped[d.date] = {
       shifts:[],
@@ -57,24 +67,39 @@ const grouped = {};
   }
 
   grouped[d.date].shifts.push(d.shift);
-  grouped[d.date].total += d.hours;
+  grouped[d.date].total += Number(d.hours||0);
 });
 
-// 🔥 render
 const tbody = document.getElementById("tableBody");
 
-tbody.innerHTML = Object.keys(grouped).map(date=>{
+if (Object.keys(grouped).length === 0){
+  tbody.innerHTML = "<tr><td colspan='3'>ไม่มีข้อมูล</td></tr>";
+}else{
+  tbody.innerHTML = Object.keys(grouped).map(date=>{
+    const g = grouped[date];
 
-  const d = grouped[date];
+    return `
+      <tr class="${g.total > 9 ? 'warn' : ''}">
+        <td>${date}</td>
+        <td>${g.shifts.join(", ")}</td>
+        <td>${g.total}</td>
+      </tr>
+    `;
+  }).join("");
+}
 
-  return `
-    <tr style="${d.total > 9 ? 'background:#ffe0e0;' : ''}">
-      <td>${date}</td>
-      <td>${d.shifts.join(", ")}</td>
-      <td>${d.total}</td>
-    </tr>
+// 🔴 แสดง duplicate เฉพาะคนนี้
+const myDup = duplicates.filter(d => d.name === data.name);
+
+if (myDup.length > 0){
+  const box = document.getElementById("dupBox");
+  box.style.display = "block";
+
+  box.innerHTML = `
+    <b>⚠️ พบข้อมูลซ้ำ</b><br>
+    ${myDup.map(d => `${d.date} | ${d.shift} (row ${d.row})`).join("<br>")}
   `;
-}).join("");
+}
 
 </script>
 
