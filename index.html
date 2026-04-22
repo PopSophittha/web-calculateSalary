@@ -3,15 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <title>Payroll</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { font-family:sans-serif; padding:20px; text-align:center; background:#f5f5f5;}
+body { font-family:sans-serif; text-align:center; padding:20px; background:#f5f5f5;}
 table { width:100%; max-width:1000px; margin:auto; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px;}
 th { background:#4CAF50; color:white;}
-tr:nth-child(even){background:#f9f9f9;}
-button{padding:8px 12px; margin:5px;}
+
+#loading {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  z-index:999;
+}
 </style>
 </head>
 
@@ -19,33 +28,42 @@ button{padding:8px 12px; margin:5px;}
 
 <h2>💰 เงินเดือนทั้งร้าน</h2>
 
-<select id="month">
-  <option value="เมษายน">เมษายน</option>
-</select>
-
-<br>
-
-<button onclick="loadData()">โหลดข้อมูล</button>
-<button onclick="goEmployee()">จัดการพนักงาน</button>
-<button onclick="exportCSV()">Export</button>
-
-<br><br>
+<div id="loading">⏳ กำลังโหลด...</div>
 
 <table id="table"></table>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxiCoG-yn0jYJacUzx0pmg-f0qCeMKegc7nalKCfPjxd2dTVO_JVR1BNBUFgAKD2hpj/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwqqs8b6A3EZ39f7ClyrzahtAjrek3wMc6crdsGcoCW2a_ambOgvJcLBwdF47RzmfLc/exec";
 
+let loading = false;
 let dataGlobal = [];
+
+window.onload = loadData; // 🔥 โหลดอัตโนมัติ
 
 async function loadData(){
 
-  const month = document.getElementById("month").value;
+  if (loading) return;
+  loading = true;
 
-  const res = await fetch(`${API_URL}?month=${month}`);
-  const data = await res.json();
+  document.getElementById("loading").style.display = "flex";
 
-  dataGlobal = data;
+  try {
+    const res = await fetch(`${API_URL}?month=เมษายน`);
+    const data = await res.json();
+
+    dataGlobal = data;
+
+    renderTable(data);
+
+  } catch(err){
+    alert("โหลดผิดพลาด");
+  }
+
+  document.getElementById("loading").style.display = "none";
+  loading = false;
+}
+
+function renderTable(data){
 
   document.getElementById("table").innerHTML =
   `<tr>
@@ -55,8 +73,8 @@ async function loadData(){
     <th>ยอดขาย</th>
     <th>รวม</th>
   </tr>` +
-  data.map(d=>`
-    <tr>
+  data.map((d,i)=>`
+    <tr onclick="goDetail(${i})" style="cursor:pointer">
       <td>${d.name}</td>
       <td>${d.hours}</td>
       <td>${d.otHours}</td>
@@ -66,21 +84,9 @@ async function loadData(){
   `).join("");
 }
 
-function exportCSV(){
-  let csv="ชื่อ,ชั่วโมง,OT,ยอดขาย,รวม\n";
-  dataGlobal.forEach(d=>{
-    csv+=`${d.name},${d.hours},${d.otHours},${d.sales},${d.total}\n`;
-  });
-
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="payroll.csv";
-  a.click();
-}
-
-function goEmployee(){
-  window.location.href="employee.html";
+function goDetail(i){
+  sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
+  window.location.href = "ot.html";
 }
 
 function format(n){
