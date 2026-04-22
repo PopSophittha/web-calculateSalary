@@ -40,7 +40,6 @@ button {
 
 <h2>💰 เงินเดือนทั้งร้าน</h2>
 
-<!-- 🔥 ปุ่มกลับมาแล้ว -->
 <button class="btn-main" onclick="loadData()">🔄 โหลดใหม่</button>
 <button class="btn-emp" onclick="goEmployee()">👩‍💼 พนักงาน</button>
 <button class="btn-export" onclick="exportCSV()">📥 Export</button>
@@ -57,7 +56,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyfELk4BsdyOuwalX3f9_7n
 let loading = false;
 let dataGlobal = [];
 
-// 🔥 โหลดอัตโนมัติ
 window.onload = loadData;
 
 async function loadData(){
@@ -69,13 +67,26 @@ async function loadData(){
 
   try {
     const res = await fetch(`${API_URL}?month=เมษายน`);
-    const data = await res.json();
+    const json = await res.json();
+
+    const data = json.data || [];          // 🔥 FIX สำคัญ
+    const duplicates = json.duplicates || [];
 
     dataGlobal = data;
+
+    // 🔴 แจ้งข้อมูลซ้ำ
+    if (duplicates.length > 0){
+      alert("⚠️ พบข้อมูลซ้ำ " + duplicates.length + " รายการ");
+      sessionStorage.setItem("duplicates", JSON.stringify(duplicates));
+    } else {
+      sessionStorage.removeItem("duplicates");
+    }
+
     renderTable(data);
 
   } catch(err){
     alert("โหลดผิดพลาด");
+    console.error(err);
   }
 
   document.getElementById("loading").style.display = "none";
