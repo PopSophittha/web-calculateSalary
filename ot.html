@@ -11,8 +11,9 @@ th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
 
 .dayoff { background:#eee; }      /* เทา */
+.white  { background:#ffffff; }   /* ขาว */
 .yellow { background:#fff8c4; }   /* เหลือง */
-.red { background:#ffcdd2; }      /* แดง */
+.red    { background:#ffcdd2; }   /* แดง */
 </style>
 </head>
 
@@ -43,7 +44,7 @@ const dailySales = data.dailySales || {};
 
 const grouped = {};
 
-// 🔥 group ตามวัน
+// 🔥 group รายวัน
 detail.forEach(d=>{
   if (!grouped[d.date]){
     grouped[d.date] = {
@@ -63,7 +64,7 @@ tbody.innerHTML = allDates.map(date=>{
   const g = grouped[date];
   const sales = dailySales[date] || 0;
 
-  // 🟫 DAY OFF
+  // 🟫 day off
   if (!g){
     return `
       <tr class="dayoff">
@@ -74,16 +75,22 @@ tbody.innerHTML = allDates.map(date=>{
     `;
   }
 
-  // 🔥 เช็ค duplicate เฉพาะวันนั้น
+  // 🔴 เช็ค duplicate
   const hasDuplicate = duplicates.some(d => 
     d.name === data.name && d.date === date
   );
 
-  // 🔥 กำหนดสี
-  let rowClass = "yellow"; // default
+  // 🎯 กำหนดสี
+  let rowClass = "white";
 
   if (g.total > 14 || hasDuplicate){
     rowClass = "red";
+  }
+  else if (g.total > 9){
+    rowClass = "yellow";
+  }
+  else {
+    rowClass = "white";
   }
 
   return `
