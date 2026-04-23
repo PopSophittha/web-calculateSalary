@@ -9,8 +9,10 @@ body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
 table { width:100%; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
-.dayoff { background:#eee; }
-.warn { background:#ffe0e0; }
+
+.dayoff { background:#eee; }      /* เทา */
+.yellow { background:#fff8c4; }   /* เหลือง */
+.red { background:#ffcdd2; }      /* แดง */
 </style>
 </head>
 
@@ -24,7 +26,7 @@ th { background:#f44336; color:white;}
 <th>วันที่</th>
 <th>กะ</th>
 <th>ชั่วโมง</th>
-<th>ยอดขาย</th> <!-- 🔥 เพิ่ม -->
+<th>ยอดขาย</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -34,16 +36,24 @@ th { background:#f44336; color:white;}
 
 const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
 const allDates = JSON.parse(sessionStorage.getItem("allDates") || "[]");
+const duplicates = JSON.parse(sessionStorage.getItem("duplicates") || "[]");
 
 const detail = data.detail || [];
+const dailySales = data.dailySales || {};
+
 const grouped = {};
 
+// 🔥 group ตามวัน
 detail.forEach(d=>{
   if (!grouped[d.date]){
-    grouped[d.date] = { shifts:[], total:0 };
+    grouped[d.date] = {
+      shifts:[],
+      total:0
+    };
   }
+
   grouped[d.date].shifts.push(d.shift);
-  grouped[d.date].total += d.hours;
+  grouped[d.date].total += Number(d.hours||0);
 });
 
 const tbody = document.getElementById("tableBody");
@@ -51,9 +61,9 @@ const tbody = document.getElementById("tableBody");
 tbody.innerHTML = allDates.map(date=>{
 
   const g = grouped[date];
-  const sales = (data.dailySales || {})[date] || 0;
+  const sales = dailySales[date] || 0;
 
-  // 🔴 day off
+  // 🟫 DAY OFF
   if (!g){
     return `
       <tr class="dayoff">
@@ -64,8 +74,20 @@ tbody.innerHTML = allDates.map(date=>{
     `;
   }
 
+  // 🔥 เช็ค duplicate เฉพาะวันนั้น
+  const hasDuplicate = duplicates.some(d => 
+    d.name === data.name && d.date === date
+  );
+
+  // 🔥 กำหนดสี
+  let rowClass = "yellow"; // default
+
+  if (g.total > 14 || hasDuplicate){
+    rowClass = "red";
+  }
+
   return `
-    <tr class="${g.total > 9 ? 'warn' : ''}">
+    <tr class="${rowClass}">
       <td>${date}</td>
       <td>${g.shifts.join(", ")}</td>
       <td>${g.total}</td>
