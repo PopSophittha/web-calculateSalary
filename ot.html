@@ -2,22 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>เช็ค OT</title>
+<title>OT Detail</title>
 
 <style>
 body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
 table { width:100%; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
-
+.dayoff { background:#eee; }
 .warn { background:#ffe0e0; }
-
-.box {
-  margin-top:15px;
-  padding:10px;
-  background:#fff3cd;
-  border:1px solid #ffeeba;
-}
 </style>
 </head>
 
@@ -25,18 +18,13 @@ th { background:#f44336; color:white;}
 
 <h2>⏱️ รายละเอียด OT</h2>
 
-<button onclick="goBack()">⬅️ กลับ</button>
-
-<h3 id="name"></h3>
-
-<div id="dupBox" class="box" style="display:none;"></div>
-
 <table>
 <thead>
 <tr>
 <th>วันที่</th>
 <th>กะ</th>
-<th>ชั่วโมงรวม</th>
+<th>ชั่วโมง</th>
+<th>ยอดขาย</th> <!-- 🔥 เพิ่ม -->
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -44,62 +32,48 @@ th { background:#f44336; color:white;}
 
 <script>
 
-function goBack(){
-  window.history.back();
-}
-
 const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
-const duplicates = JSON.parse(sessionStorage.getItem("duplicates") || "[]");
+const allDates = JSON.parse(sessionStorage.getItem("allDates") || "[]");
 
-document.getElementById("name").innerText = data.name || "-";
-
-// 🔥 กัน detail หาย
-const detail = Array.isArray(data.detail) ? data.detail : [];
-
+const detail = data.detail || [];
 const grouped = {};
 
 detail.forEach(d=>{
   if (!grouped[d.date]){
-    grouped[d.date] = {
-      shifts:[],
-      total:0
-    };
+    grouped[d.date] = { shifts:[], total:0 };
   }
-
   grouped[d.date].shifts.push(d.shift);
-  grouped[d.date].total += Number(d.hours||0);
+  grouped[d.date].total += d.hours;
 });
 
 const tbody = document.getElementById("tableBody");
 
-if (Object.keys(grouped).length === 0){
-  tbody.innerHTML = "<tr><td colspan='3'>ไม่มีข้อมูล</td></tr>";
-}else{
-  tbody.innerHTML = Object.keys(grouped).map(date=>{
-    const g = grouped[date];
+tbody.innerHTML = allDates.map(date=>{
 
+  const g = grouped[date];
+  const sales = (data.dailySales || {})[date] || 0;
+
+  // 🔴 day off
+  if (!g){
     return `
-      <tr class="${g.total > 9 ? 'warn' : ''}">
+      <tr class="dayoff">
         <td>${date}</td>
-        <td>${g.shifts.join(", ")}</td>
-        <td>${g.total}</td>
+        <td colspan="2">day off</td>
+        <td>0</td>
       </tr>
     `;
-  }).join("");
-}
+  }
 
-// 🔴 แสดง duplicate เฉพาะคนนี้
-const myDup = duplicates.filter(d => d.name === data.name);
-
-if (myDup.length > 0){
-  const box = document.getElementById("dupBox");
-  box.style.display = "block";
-
-  box.innerHTML = `
-    <b>⚠️ พบข้อมูลซ้ำ</b><br>
-    ${myDup.map(d => `${d.date} | ${d.shift} (row ${d.row})`).join("<br>")}
+  return `
+    <tr class="${g.total > 9 ? 'warn' : ''}">
+      <td>${date}</td>
+      <td>${g.shifts.join(", ")}</td>
+      <td>${g.total}</td>
+      <td>${Number(sales).toLocaleString()}</td>
+    </tr>
   `;
-}
+
+}).join("");
 
 </script>
 
