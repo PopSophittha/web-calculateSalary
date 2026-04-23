@@ -7,22 +7,21 @@
 <style>
 body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
 
+.summary {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
 table { width:100%; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
 
 .dayoff { background:#eee; }
-.white  { background:#ffffff; }
+.white  { background:#fff; }
 .yellow { background:#fff8c4; }
 .red    { background:#ffcdd2; }
-
-.summary {
-  background:white;
-  padding:15px;
-  margin-bottom:15px;
-  border-radius:10px;
-  text-align:left;
-}
 </style>
 </head>
 
@@ -54,25 +53,20 @@ const data = JSON.parse(sessionStorage.getItem("empDetail") || "{}");
 const allDates = JSON.parse(sessionStorage.getItem("allDates") || "[]");
 const duplicates = JSON.parse(sessionStorage.getItem("duplicates") || "[]");
 
-const detail = data.detail || [];
-const dailySales = data.dailySales || {};
-
 const grouped = {};
-
-// ===== group =====
-detail.forEach(d=>{
-  if (!grouped[d.date]){
-    grouped[d.date] = { shifts:[], total:0 };
-  }
-  grouped[d.date].shifts.push(d.shift);
-  grouped[d.date].total += Number(d.hours||0);
-});
+const dailySales = data.dailySales || {};
 
 let totalHours = 0;
 let totalSales = 0;
 let workDays = 0;
-let otDays = 0;
-let otHours = 0;
+
+(data.detail || []).forEach(d=>{
+  if (!grouped[d.date]){
+    grouped[d.date] = { shifts:[], total:0 };
+  }
+  grouped[d.date].shifts.push(d.shift);
+  grouped[d.date].total += d.hours;
+});
 
 const tbody = document.getElementById("tableBody");
 
@@ -81,39 +75,19 @@ tbody.innerHTML = allDates.map(date=>{
   const g = grouped[date];
   const sales = dailySales[date] || 0;
 
-  // day off
   if (!g){
-    return `
-      <tr class="dayoff">
-        <td>${date}</td>
-        <td colspan="2">day off</td>
-        <td>0</td>
-      </tr>
-    `;
+    return `<tr class="dayoff"><td>${date}</td><td colspan="2">day off</td><td>0</td></tr>`;
   }
 
-  // duplicate
-  const hasDuplicate = duplicates.some(d => 
-    d.name === data.name && d.date === date
-  );
-
-  // count
   totalHours += g.total;
   totalSales += sales;
   workDays++;
 
-  if (g.total > 9){
-    otDays++;
-    otHours += (g.total - 9);
-  }
+  const hasDuplicate = duplicates.some(d => d.name === data.name && d.date === date);
 
-  // color
   let rowClass = "white";
-  if (g.total > 14 || hasDuplicate){
-    rowClass = "red";
-  } else if (g.total > 9){
-    rowClass = "yellow";
-  }
+  if (g.total > 14 || hasDuplicate) rowClass = "red";
+  else if (g.total > 9) rowClass = "yellow";
 
   return `
     <tr class="${rowClass}">
@@ -126,7 +100,6 @@ tbody.innerHTML = allDates.map(date=>{
 
 }).join("");
 
-// ===== footer =====
 document.getElementById("footer").innerHTML = `
 <tr>
   <td><b>รวม</b></td>
@@ -136,18 +109,19 @@ document.getElementById("footer").innerHTML = `
 </tr>
 `;
 
-// ===== summary =====
-const totalDays = allDates.length;
-const offDays = totalDays - workDays;
-
 document.getElementById("summary").innerHTML = `
 <b>👤 ${data.name}</b><br><br>
 
-📅 จำนวนวันทั้งหมด: ${totalDays} วัน<br>
-✅ ทำงาน: ${workDays} วัน<br>
-🟫 หยุด: ${offDays} วัน<br><br>
+📊 สิทธิวันหยุด: ${data.leaveQuota} วัน 
+(${data.leaveBase} + ${data.leaveAcc} + ${data.holiday})<br>
 
-🔥 OT: ${otDays} วัน (${otHours} ชั่วโมง)<br><br>
+🟫 หยุดจริง: ${data.offDays} วัน<br>
+⚠️ ขาดวันหยุด: ${data.otDays} วัน<br><br>
+
+🔥 OT วัน: ${data.otDays} วัน<br>
+🔥 OT ชั่วโมง: ${data.otHours} ชม<br>
+
+💰 ค่า OT: ${Number(data.otPay).toLocaleString()} บาท<br><br>
 
 💰 ยอดขายรวม: ${Number(totalSales).toLocaleString()} บาท<br>
 ⏱️ ชั่วโมงรวม: ${totalHours} ชั่วโมง
