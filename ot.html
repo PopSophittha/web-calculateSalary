@@ -6,20 +6,31 @@
 
 <style>
 body { font-family:sans-serif; padding:20px; background:#f9f9f9;}
+
 table { width:100%; border-collapse:collapse; background:white;}
 th,td { border:1px solid #ddd; padding:8px; text-align:center;}
 th { background:#f44336; color:white;}
 
-.dayoff { background:#eee; }      /* เทา */
-.white  { background:#ffffff; }   /* ขาว */
-.yellow { background:#fff8c4; }   /* เหลือง */
-.red    { background:#ffcdd2; }   /* แดง */
+.dayoff { background:#eee; }
+.white  { background:#ffffff; }
+.yellow { background:#fff8c4; }
+.red    { background:#ffcdd2; }
+
+.summary {
+  background:white;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:10px;
+  text-align:left;
+}
 </style>
 </head>
 
 <body>
 
 <h2>⏱️ รายละเอียด OT</h2>
+
+<div id="summary" class="summary"></div>
 
 <table>
 <thead>
@@ -30,7 +41,11 @@ th { background:#f44336; color:white;}
 <th>ยอดขาย</th>
 </tr>
 </thead>
+
 <tbody id="tableBody"></tbody>
+
+<tfoot id="footer"></tfoot>
+
 </table>
 
 <script>
@@ -44,18 +59,20 @@ const dailySales = data.dailySales || {};
 
 const grouped = {};
 
-// 🔥 group รายวัน
+// ===== group =====
 detail.forEach(d=>{
   if (!grouped[d.date]){
-    grouped[d.date] = {
-      shifts:[],
-      total:0
-    };
+    grouped[d.date] = { shifts:[], total:0 };
   }
-
   grouped[d.date].shifts.push(d.shift);
   grouped[d.date].total += Number(d.hours||0);
 });
+
+let totalHours = 0;
+let totalSales = 0;
+let workDays = 0;
+let otDays = 0;
+let otHours = 0;
 
 const tbody = document.getElementById("tableBody");
 
@@ -64,7 +81,7 @@ tbody.innerHTML = allDates.map(date=>{
   const g = grouped[date];
   const sales = dailySales[date] || 0;
 
-  // 🟫 day off
+  // day off
   if (!g){
     return `
       <tr class="dayoff">
@@ -75,22 +92,27 @@ tbody.innerHTML = allDates.map(date=>{
     `;
   }
 
-  // 🔴 เช็ค duplicate
+  // duplicate
   const hasDuplicate = duplicates.some(d => 
     d.name === data.name && d.date === date
   );
 
-  // 🎯 กำหนดสี
-  let rowClass = "white";
+  // count
+  totalHours += g.total;
+  totalSales += sales;
+  workDays++;
 
+  if (g.total > 9){
+    otDays++;
+    otHours += (g.total - 9);
+  }
+
+  // color
+  let rowClass = "white";
   if (g.total > 14 || hasDuplicate){
     rowClass = "red";
-  }
-  else if (g.total > 9){
+  } else if (g.total > 9){
     rowClass = "yellow";
-  }
-  else {
-    rowClass = "white";
   }
 
   return `
@@ -103,6 +125,33 @@ tbody.innerHTML = allDates.map(date=>{
   `;
 
 }).join("");
+
+// ===== footer =====
+document.getElementById("footer").innerHTML = `
+<tr>
+  <td><b>รวม</b></td>
+  <td>-</td>
+  <td><b>${totalHours}</b></td>
+  <td><b>${Number(totalSales).toLocaleString()}</b></td>
+</tr>
+`;
+
+// ===== summary =====
+const totalDays = allDates.length;
+const offDays = totalDays - workDays;
+
+document.getElementById("summary").innerHTML = `
+<b>👤 ${data.name}</b><br><br>
+
+📅 จำนวนวันทั้งหมด: ${totalDays} วัน<br>
+✅ ทำงาน: ${workDays} วัน<br>
+🟫 หยุด: ${offDays} วัน<br><br>
+
+🔥 OT: ${otDays} วัน (${otHours} ชั่วโมง)<br><br>
+
+💰 ยอดขายรวม: ${Number(totalSales).toLocaleString()} บาท<br>
+⏱️ ชั่วโมงรวม: ${totalHours} ชั่วโมง
+`;
 
 </script>
 
