@@ -235,7 +235,17 @@ function goDetail(i){
 // เพิ่มใหม่ (ไม่ทับของเดิม)
 // ==========================
 function viewSlip(i){
-  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
+
+  const year = document.getElementById("year").value;
+  const month = document.getElementById("month").value;
+
+  const data = dataGlobal[i];
+
+  data.year = year;
+  data.month = month;
+
+  sessionStorage.setItem("empSlip", JSON.stringify(data));
+
   window.open("slip.html");
 }
   
