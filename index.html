@@ -17,7 +17,14 @@ table {
 
 th,td { border:1px solid #ddd; padding:8px;}
 th { background:#4CAF50; color:white;}
-
+th.deduct {
+  background:#e74c3c;
+  color:white;
+}
+ td.deduct {
+  color:#e74c3c;
+  font-weight:bold;
+} 
 tr:nth-child(even){ background:#f9f9f9; }
 
 button {
@@ -60,18 +67,20 @@ button:hover {
 <th>โอที</th>
 <th>ค่าคอม</th>
 <th>โบนัส</th>
-<th>ประกันสังคม</th>
-<th>กยศ</th>
-<th>เงินสะสม</th>
-<th>มาสาย</th>
-<th>ค่าไฟ</th>
-<th>ค่าน้ำ</th>
-<th>ค่าเสื้อ</th>
-<th>หักอื่นๆ</th>
+
+<th class="deduct">ประกันสังคม</th>
+<th class="deduct">กยศ</th>
+<th class="deduct">เงินสะสม</th>
+<th class="deduct">มาสาย</th>
+<th class="deduct">ค่าไฟ</th>
+<th class="deduct">ค่าน้ำ</th>
+<th class="deduct">ค่าเสื้อ</th>
+<th class="deduct">หักอื่นๆ</th>
+
 <th>รวมเงินได้</th>
-<th>รวมหัก</th>
+<th class="deduct">รวมหัก</th>
 <th>เงินได้สุทธิ</th>
-<th>หัก ณ ที่จ่าย</th>
+<th class="deduct">หัก ณ ที่จ่าย</th>
 <th>ยอดโอนสุทธิ</th>
 </tr>
 </thead>
@@ -153,21 +162,21 @@ function renderTable(data){
       <td>${format(d.commission)}</td>
       <td>${format(d.bonus)}</td>
 
-      <td>${format(d.social)}</td>
-      <td>${format(d.loan)}</td>
-      <td>${format(d.saving)}</td>
+      <td class="deduct">${format(d.social)}</td>
+      <td class="deduct">${format(d.loan)}</td>
+      <td class="deduct">${format(d.saving)}</td>
 
-      <td>${format(d.late)}</td>
-      <td>${format(d.electric)}</td>
-      <td>${format(d.water)}</td>
-      <td>${format(d.uniform)}</td>
-      <td>${format(d.otherDeduct)}</td>
+      <td class="deduct">${format(d.late)}</td>
+      <td class="deduct">${format(d.electric)}</td>
+      <td class="deduct">${format(d.water)}</td>
+      <td class="deduct">${format(d.uniform)}</td>
+      <td class="deduct">${format(d.otherDeduct)}</td>
 
       <td><b>${format(income)}</b></td>
-      <td>${format(deduct)}</td>
+      <td class="deduct">${format(deduct)}</td>
       <td>${format(net)}</td>
 
-      <td>${format(d.tax)}</td>
+      <td class="deduct">${format(d.tax)}</td>
       <td><b>${format(transfer)}</b></td>
     </tr>`;
   }).join("");
