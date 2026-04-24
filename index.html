@@ -122,8 +122,16 @@ async function loadData(){
     const res = await fetch(
       `${API_URL}?month=${encodeURIComponent(month)}&year=${year}`
     );
-    const json = await res.json();
-
+    const text = await res.text();
+    const json = JSON.parse(text);
+    
+    // 🔥 เช็ค error จาก API
+    if (json.error){
+      alert("❌ " + json.error);
+      document.getElementById("loading").style.display="none";
+      return;
+    }
+    
     const data = json.data || [];
     const allDates = json.allDates || [];
 
