@@ -2,74 +2,190 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Slip</title>
+<title>Pay Slip</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-body{ font-family:sans-serif; padding:20px; }
-.card{
-  max-width:600px;
-  margin:auto;
-  border:1px solid #ddd;
+body{
+  font-family: Arial, sans-serif;
+  background:#f5f5f5;
   padding:20px;
-  background:white;
 }
-h2{text-align:center;}
-button{ margin:5px; padding:8px 12px; }
+
+.slip{
+  width:900px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border:1px solid #ccc;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  text-align:center;
+}
+
+.logo img{
+  height:50px;
+}
+
+.title{
+  text-align:right;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+}
+
+.section{
+  display:flex;
+  margin-top:20px;
+  border:1px solid #000;
+}
+
+.col{
+  flex:1;
+  border-right:1px solid #000;
+  padding:10px;
+}
+
+.col:last-child{
+  border-right:none;
+}
+
+.col h4{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.item{
+  display:flex;
+  justify-content:space-between;
+  margin:5px 0;
+}
+
+.footer{
+  margin-top:20px;
+  display:flex;
+  justify-content:space-between;
+}
+
+button{
+  margin-top:20px;
+  padding:10px 15px;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<div class="card" id="slip">
-  <h2>สลิปเงินเดือน</h2>
-  <div id="content"></div>
+<div class="slip" id="slip">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <b>บริษัท มันตา ฟาร์มาซี จำกัด</b><br>
+      ชื่อ: <span id="name"></span>
+    </div>
+
+    <div class="logo">
+      <img src="https://drive.google.com/uc?id=1ekxMr7tPhN8ZdNRcS2gF8AQjVEBrqvS1">
+    </div>
+
+    <div class="title">
+      <b>สลิปเงินเดือน / Pay Slip</b><br>
+      เดือน: <span id="period"></span>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section">
+
+    <!-- EARN -->
+    <div class="col">
+      <h4>เงินได้</h4>
+
+      <div class="item"><span>เงินเดือน</span><span id="salary"></span></div>
+      <div class="item"><span>โอที</span><span id="ot"></span></div>
+      <div class="item"><span>ค่าคอม</span><span id="com"></span></div>
+      <div class="item"><span>โบนัส</span><span id="bonus"></span></div>
+
+    </div>
+
+    <!-- DEDUCT -->
+    <div class="col">
+      <h4>รายการหัก</h4>
+
+      <div class="item"><span>ประกันสังคม</span><span id="social"></span></div>
+      <div class="item"><span>กยศ</span><span id="loan"></span></div>
+      <div class="item"><span>เงินสะสม</span><span id="saving"></span></div>
+      <div class="item"><span>อื่นๆ</span><span id="other"></span></div>
+
+    </div>
+
+    <!-- TOTAL -->
+    <div class="col">
+      <h4>สรุป</h4>
+
+      <div class="item"><span>รวมรายได้</span><span id="income"></span></div>
+      <div class="item"><span>รวมหัก</span><span id="deduct"></span></div>
+      <div class="item"><b>สุทธิ</b><b id="net"></b></div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <div style="text-align:center;">
-  <button onclick="downloadPDF()">📄 PDF</button>
-  <button onclick="sendEmail()">📧 Email</button>
+  <button onclick="downloadPDF()">📄 ดาวน์โหลด PDF</button>
 </div>
 
 <script>
 const data = JSON.parse(sessionStorage.getItem("empSlip") || "{}");
 
-document.getElementById("content").innerHTML = `
-<p>ชื่อ: ${data.name}</p>
-<p>เงินเดือน: ${f(data.baseSalary)}</p>
-<p>โอที: ${f(data.otPay)}</p>
-<p>ค่าคอม: ${f(data.commission)}</p>
-<p>โบนัส: ${f(data.bonus)}</p>
-<hr>
-<p><b>สุทธิ: ${f(data.total)}</b></p>
-`;
+// ====== render ======
+document.getElementById("name").innerText = data.name;
+document.getElementById("period").innerText = `${data.month}/${data.year}`;
 
-function f(n){ return Number(n||0).toLocaleString(); }
+document.getElementById("salary").innerText = f(data.baseSalary);
+document.getElementById("ot").innerText = f(data.otPay);
+document.getElementById("com").innerText = f(data.commission);
+document.getElementById("bonus").innerText = f(data.bonus);
 
-// ================== PDF ==================
+document.getElementById("social").innerText = f(data.social);
+document.getElementById("loan").innerText = f(data.loan);
+document.getElementById("saving").innerText = f(data.saving);
+document.getElementById("other").innerText = f(data.otherDeduct);
+
+const income = data.baseSalary + data.otPay + data.commission + data.bonus;
+const deduct = data.social + data.loan + data.saving + data.otherDeduct;
+const net = income - deduct;
+
+document.getElementById("income").innerText = f(income);
+document.getElementById("deduct").innerText = f(deduct);
+document.getElementById("net").innerText = f(net);
+
+// ====== PDF ======
 function downloadPDF(){
 
-  const year = new Date().getFullYear()+543;
-  const month = new Date().getMonth()+1;
-
-  const filename = `${year}_${month}_${data.empCode}_${data.name}.pdf`;
+  const filename =
+    `${data.year}_${data.month}_${data.empCode}_${data.name}.pdf`;
 
   html2pdf().from(document.getElementById("slip")).save(filename);
 }
 
-// ================== EMAIL ==================
-async function sendEmail(){
-
-  await fetch("YOUR_API_URL",{
-    method:"POST",
-    body: JSON.stringify({
-      action:"sendSlip",
-      data
-    })
-  });
-
-  alert("ส่งอีเมลแล้ว");
+function f(n){
+  return Number(n||0).toLocaleString();
 }
 </script>
 
