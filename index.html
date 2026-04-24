@@ -6,9 +6,32 @@
 
 <style>
 body { font-family:sans-serif; text-align:center; padding:20px; background:#f5f5f5;}
-table { width:100%; max-width:1000px; margin:auto; border-collapse:collapse; background:white;}
+
+table { 
+  width:100%; 
+  max-width:1200px; 
+  margin:auto; 
+  border-collapse:collapse; 
+  background:white;
+}
+
 th,td { border:1px solid #ddd; padding:8px;}
 th { background:#4CAF50; color:white;}
+
+tr:nth-child(even){ background:#f9f9f9; }
+
+button {
+  padding:4px 8px;
+  cursor:pointer;
+  border:none;
+  background:#4CAF50;
+  color:white;
+  border-radius:4px;
+}
+
+button:hover {
+  background:#45a049;
+}
 
 #loading {
   position:fixed;
@@ -57,93 +80,112 @@ th { background:#4CAF50; color:white;}
 </table>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbx_U0oRXaIfLncLDEVSX6omxH3W-1DWXXl7KZknLJXyLvgKnsyv-aA1_saIqrliClAz/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyMLihULUFndhs2RoK8azHa8ciT4zxnlh4jF6mfrKPULLjJXSJu3eGQZ50bCpwNfAZc/exec";
 
 let dataGlobal = [];
 
 window.onload = loadData;
 
+// ==========================
+// 🔥 โหลดข้อมูล
+// ==========================
 async function loadData(){
 
-  const res = await fetch(`${API_URL}?month=เมษายน`);
-  const json = await res.json();
+  try{
+    const res = await fetch(`${API_URL}?month=เมษายน`);
+    const json = await res.json();
 
-  const data = json.data || [];
-  const allDates = json.allDates || [];
+    const data = json.data || [];
+    const allDates = json.allDates || [];
 
-  sessionStorage.setItem("allDates", JSON.stringify(allDates));
-  sessionStorage.setItem("duplicates", JSON.stringify(json.duplicates || []));
+    sessionStorage.setItem("allDates", JSON.stringify(allDates));
+    sessionStorage.setItem("duplicates", JSON.stringify(json.duplicates || []));
 
-  dataGlobal = data;
+    dataGlobal = data;
 
-  renderTable(data);
+    renderTable(data);
+
+  }catch(err){
+    alert("โหลดข้อมูลผิดพลาด");
+  }
 
   document.getElementById("loading").style.display = "none";
 }
 
+// ==========================
+// 🔥 render ตาราง
+// ==========================
 function renderTable(data){
-
-  window.dataGlobal = data;
 
   const tbody = document.getElementById("tableBody");
 
-  tbody.innerHTML = data.map(d=>{
+  tbody.innerHTML = data.map((d, i)=>{
 
     const income =
-      d.baseSalary +
-      d.otPay +
-      d.commission +
-      d.bonus;
+      (d.baseSalary || 0) +
+      (d.otPay || 0) +
+      (d.commission || 0) +
+      (d.bonus || 0);
 
     const deduct =
-      d.social +
-      d.loan +
-      d.saving +
-      d.late +
-      d.electric +
-      d.water +
-      d.uniform +
-      d.otherDeduct;
+      (d.social || 0) +
+      (d.loan || 0) +
+      (d.saving || 0) +
+      (d.late || 0) +
+      (d.electric || 0) +
+      (d.water || 0) +
+      (d.uniform || 0) +
+      (d.otherDeduct || 0);
 
     const net = income - deduct;
-    const transfer = net - d.tax;
+    const transfer = net - (d.tax || 0);
 
     return `
     <tr>
-      <td>${d.name}</td>
+      <td>
+        <button onclick="goDetail(${i})">
+          ${d.name}
+        </button>
+      </td>
 
-      <td>${d.baseSalary.toLocaleString()}</td>
-      <td>${d.otPay.toLocaleString()}</td>
-      <td>${d.commission.toLocaleString()}</td>
-      <td>${d.bonus.toLocaleString()}</td>
+      <td>${format(d.baseSalary)}</td>
+      <td>${format(d.otPay)}</td>
+      <td>${format(d.commission)}</td>
+      <td>${format(d.bonus)}</td>
 
-      <td>${d.social.toLocaleString()}</td>
-      <td>${d.loan.toLocaleString()}</td>
-      <td>${d.saving.toLocaleString()}</td>
+      <td>${format(d.social)}</td>
+      <td>${format(d.loan)}</td>
+      <td>${format(d.saving)}</td>
 
-      <td>${d.late.toLocaleString()}</td>
-      <td>${d.electric.toLocaleString()}</td>
-      <td>${d.water.toLocaleString()}</td>
-      <td>${d.uniform.toLocaleString()}</td>
-      <td>${d.otherDeduct.toLocaleString()}</td>
+      <td>${format(d.late)}</td>
+      <td>${format(d.electric)}</td>
+      <td>${format(d.water)}</td>
+      <td>${format(d.uniform)}</td>
+      <td>${format(d.otherDeduct)}</td>
 
-      <td><b>${income.toLocaleString()}</b></td>
-      <td>${deduct.toLocaleString()}</td>
-      <td>${net.toLocaleString()}</td>
+      <td><b>${format(income)}</b></td>
+      <td>${format(deduct)}</td>
+      <td>${format(net)}</td>
 
-      <td>${d.tax.toLocaleString()}</td>
-      <td><b>${transfer.toLocaleString()}</b></td>
+      <td>${format(d.tax)}</td>
+      <td><b>${format(transfer)}</b></td>
     </tr>`;
   }).join("");
 }
 
+// ==========================
+// 🔥 ไปหน้า OT
+// ==========================
 function goDetail(i){
   sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
   window.location.href = "ot.html";
 }
 
+// ==========================
+// 🔥 format ตัวเลข
+// ==========================
 function format(n){
-  return Number(n||0).toLocaleString();
+  return Number(n || 0).toLocaleString();
 }
 </script>
 
