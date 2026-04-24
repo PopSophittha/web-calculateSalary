@@ -7,185 +7,237 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f5f5f5;
-  padding:20px;
+@page {
+  size: A5 portrait;
+  margin: 10mm;
 }
 
-.slip{
-  width:900px;
-  margin:auto;
+body{
+  font-family: "TH Sarabun New", Arial, sans-serif;
+  background:#eee;
+}
+
+.paper{
+  width: 148mm;
+  height: 210mm;
   background:white;
-  padding:20px;
-  border:1px solid #ccc;
+  margin:auto;
+  padding:12mm;
+  box-sizing:border-box;
+  position:relative;
 }
 
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
+}
+
+.left{
+  font-size:14px;
+}
+
+.right{
+  text-align:right;
+  font-size:14px;
 }
 
 .logo{
-  text-align:center;
+  position:absolute;
+  top:12mm;
+  left:50%;
+  transform:translateX(-50%);
 }
 
 .logo img{
-  height:50px;
+  height:40px;
 }
 
 .title{
-  text-align:right;
+  font-size:20px;
+  font-weight:bold;
 }
 
-.row{
+.sub{
+  font-size:12px;
+  color:#444;
+}
+
+.info{
+  margin-top:20px;
   display:flex;
   justify-content:space-between;
-  margin-top:10px;
+  font-size:14px;
 }
 
-.section{
-  display:flex;
-  margin-top:20px;
+.table{
+  margin-top:15px;
   border:1px solid #000;
+  display:flex;
 }
 
 .col{
   flex:1;
   border-right:1px solid #000;
-  padding:10px;
 }
 
 .col:last-child{
   border-right:none;
 }
 
-.col h4{
+.head{
+  border-bottom:1px solid #000;
+  padding:5px;
   text-align:center;
-  margin-bottom:10px;
+  font-weight:bold;
+  font-size:14px;
 }
 
-.item{
+.row{
   display:flex;
   justify-content:space-between;
-  margin:5px 0;
+  padding:4px 6px;
+  font-size:13px;
+}
+
+.total{
+  border-top:1px solid #000;
+  padding:6px;
+  font-weight:bold;
 }
 
 .footer{
   margin-top:20px;
+  font-size:12px;
+}
+
+.sign{
+  margin-top:20px;
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-end;
 }
 
 button{
-  margin-top:20px;
-  padding:10px 15px;
-  cursor:pointer;
+  margin-top:10px;
+  padding:8px 12px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="slip" id="slip">
+<div class="paper" id="slip">
 
   <!-- HEADER -->
   <div class="header">
-    <div>
+    <div class="left">
       <b>บริษัท มันตา ฟาร์มาซี จำกัด</b><br>
-      ชื่อ: <span id="name"></span>
+      Emp. name (Code): <span id="name"></span><br>
+      Position: <span id="pos"></span>
     </div>
 
     <div class="logo">
       <img src="https://drive.google.com/uc?id=1ekxMr7tPhN8ZdNRcS2gF8AQjVEBrqvS1">
     </div>
 
-    <div class="title">
-      <b>สลิปเงินเดือน / Pay Slip</b><br>
-      เดือน: <span id="period"></span>
+    <div class="right">
+      <div class="title">สลิปเงินเดือน / Pay Slip</div>
+      Payroll Period: <span id="period"></span><br>
+      Payment Date: <span id="paydate"></span>
     </div>
   </div>
 
   <!-- TABLE -->
-  <div class="section">
+  <div class="table">
 
-    <!-- EARN -->
+    <!-- Earnings -->
     <div class="col">
-      <h4>เงินได้</h4>
+      <div class="head">เงินได้ / Earnings</div>
 
-      <div class="item"><span>เงินเดือน</span><span id="salary"></span></div>
-      <div class="item"><span>โอที</span><span id="ot"></span></div>
-      <div class="item"><span>ค่าคอม</span><span id="com"></span></div>
-      <div class="item"><span>โบนัส</span><span id="bonus"></span></div>
+      <div class="row"><span>เงินเดือน</span><span id="salary"></span></div>
+      <div class="row"><span>ค่าล่วงเวลา</span><span id="ot"></span></div>
+      <div class="row"><span>ค่าคอม</span><span id="com"></span></div>
+      <div class="row"><span>โบนัส</span><span id="bonus"></span></div>
 
+      <div class="total">รวม: <span id="income"></span></div>
     </div>
 
-    <!-- DEDUCT -->
+    <!-- Deduct -->
     <div class="col">
-      <h4>รายการหัก</h4>
+      <div class="head">รายการหัก / Deductions</div>
 
-      <div class="item"><span>ประกันสังคม</span><span id="social"></span></div>
-      <div class="item"><span>กยศ</span><span id="loan"></span></div>
-      <div class="item"><span>เงินสะสม</span><span id="saving"></span></div>
-      <div class="item"><span>อื่นๆ</span><span id="other"></span></div>
+      <div class="row"><span>ประกันสังคม</span><span id="social"></span></div>
+      <div class="row"><span>ภาษี</span><span id="tax"></span></div>
+      <div class="row"><span>กยศ</span><span id="loan"></span></div>
+      <div class="row"><span>อื่นๆ</span><span id="other"></span></div>
 
+      <div class="total">รวม: <span id="deduct"></span></div>
     </div>
 
-    <!-- TOTAL -->
+    <!-- Summary -->
     <div class="col">
-      <h4>สรุป</h4>
+      <div class="head">สรุป / Summary</div>
 
-      <div class="item"><span>รวมรายได้</span><span id="income"></span></div>
-      <div class="item"><span>รวมหัก</span><span id="deduct"></span></div>
-      <div class="item"><b>สุทธิ</b><b id="net"></b></div>
-
+      <div class="row"><span>รวมเงินได้</span><span id="income2"></span></div>
+      <div class="row"><span>รวมหัก</span><span id="deduct2"></span></div>
+      <div class="row"><b>สุทธิ</b><b id="net"></b></div>
     </div>
 
+  </div>
+
+  <!-- FOOT -->
+  <div class="footer">
+    หมายเหตุ: Salary is confidential
+  </div>
+
+  <div class="sign">
+    Employer Signature __________________
   </div>
 
 </div>
 
 <div style="text-align:center;">
-  <button onclick="downloadPDF()">📄 ดาวน์โหลด PDF</button>
+  <button onclick="downloadPDF()">📄 PDF</button>
 </div>
 
 <script>
-const data = JSON.parse(sessionStorage.getItem("empSlip") || "{}");
+const d = JSON.parse(sessionStorage.getItem("empSlip") || "{}");
 
-// ====== render ======
-document.getElementById("name").innerText = data.name;
-document.getElementById("period").innerText = `${data.month}/${data.year}`;
+function f(n){ return Number(n||0).toLocaleString(); }
 
-document.getElementById("salary").innerText = f(data.baseSalary);
-document.getElementById("ot").innerText = f(data.otPay);
-document.getElementById("com").innerText = f(data.commission);
-document.getElementById("bonus").innerText = f(data.bonus);
+document.getElementById("name").innerText = d.name + " ("+d.empCode+")";
+document.getElementById("pos").innerText = d.position || "-";
+document.getElementById("period").innerText = d.month + "/" + d.year;
+document.getElementById("paydate").innerText = new Date().toLocaleDateString();
 
-document.getElementById("social").innerText = f(data.social);
-document.getElementById("loan").innerText = f(data.loan);
-document.getElementById("saving").innerText = f(data.saving);
-document.getElementById("other").innerText = f(data.otherDeduct);
+document.getElementById("salary").innerText = f(d.baseSalary);
+document.getElementById("ot").innerText = f(d.otPay);
+document.getElementById("com").innerText = f(d.commission);
+document.getElementById("bonus").innerText = f(d.bonus);
 
-const income = data.baseSalary + data.otPay + data.commission + data.bonus;
-const deduct = data.social + data.loan + data.saving + data.otherDeduct;
+document.getElementById("social").innerText = f(d.social);
+document.getElementById("tax").innerText = f(d.tax);
+document.getElementById("loan").innerText = f(d.loan);
+document.getElementById("other").innerText = f(d.otherDeduct);
+
+const income = d.baseSalary + d.otPay + d.commission + d.bonus;
+const deduct = d.social + d.tax + d.loan + d.otherDeduct;
 const net = income - deduct;
 
 document.getElementById("income").innerText = f(income);
 document.getElementById("deduct").innerText = f(deduct);
+document.getElementById("income2").innerText = f(income);
+document.getElementById("deduct2").innerText = f(deduct);
 document.getElementById("net").innerText = f(net);
 
-// ====== PDF ======
 function downloadPDF(){
+  const filename = `${d.year}_${d.month}_${d.empCode}_${d.name}.pdf`;
 
-  const filename =
-    `${data.year}_${data.month}_${data.empCode}_${data.name}.pdf`;
-
-  html2pdf().from(document.getElementById("slip")).save(filename);
-}
-
-function f(n){
-  return Number(n||0).toLocaleString();
+  html2pdf(document.getElementById("slip"), {
+    margin:0,
+    filename,
+    html2canvas:{scale:2},
+    jsPDF:{unit:'mm', format:'a5'}
+  });
 }
 </script>
 
