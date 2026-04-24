@@ -18,13 +18,12 @@ body{
 }
 
 .paper{
-  width: 210mm;
-  height: 148mm;
+  width:210mm;
+  height:148mm;
   background:white;
   margin:auto;
   padding:10mm;
   box-sizing:border-box;
-  position:relative;
 }
 
 .header{
@@ -33,9 +32,27 @@ body{
   font-size:14px;
 }
 
+.left{
+  line-height:1.4;
+}
+
+.right{
+  text-align:right;
+  line-height:1.5;
+}
+
+.title{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.sub{
+  font-size:12px;
+  color:#444;
+}
+
 .logo{
   position:absolute;
-  top:10mm;
   left:50%;
   transform:translateX(-50%);
 }
@@ -44,26 +61,10 @@ body{
   height:40px;
 }
 
-.title{
-  text-align:right;
-}
-
-.title h2{
-  margin:0;
-  font-size:20px;
-}
-
-.info{
-  margin-top:20px;
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-}
-
 .table{
   margin-top:15px;
-  display:flex;
   border:1px solid #000;
+  display:flex;
 }
 
 .col{
@@ -78,37 +79,32 @@ body{
 .head{
   text-align:center;
   border-bottom:1px solid #000;
-  padding:5px;
+  padding:4px;
   font-weight:bold;
 }
 
 .row{
   display:flex;
   justify-content:space-between;
-  padding:4px 8px;
+  padding:3px 6px;
   font-size:13px;
 }
 
 .total{
   border-top:1px solid #000;
-  padding:6px 8px;
+  padding:5px;
   font-weight:bold;
 }
 
 .footer{
   margin-top:15px;
-  font-size:12px;
+  font-size:11px;
+  text-align:center;
 }
 
 .sign{
   margin-top:15px;
   text-align:right;
-}
-
-button{
-  margin:10px;
-  padding:8px 12px;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -119,21 +115,32 @@ button{
 
   <!-- HEADER -->
   <div class="header">
-    <div>
-      <b>บริษัท มันตา ฟาร์มาซี จำกัด</b><br>
-      Emp: <span id="name"></span><br>
-      Position: <span id="pos"></span>
+
+    <!-- LEFT -->
+    <div class="left">
+      <b>บริษัท มันตา ฟาร์มาซี จำกัด</b><br><br>
+
+      ชื่อนามสกุล(รหัส): <span id="name"></span><br>
+      <span class="sub">Emp. name (Code)</span><br><br>
+
+      ตำแหน่ง: <span id="pos"></span><br>
+      <span class="sub">Position</span>
     </div>
 
-    <div class="logo">
-      <img src="https://drive.google.com/uc?id=1ekxMr7tPhN8ZdNRcS2gF8AQjVEBrqvS1">
+    <!-- RIGHT -->
+    <div class="right">
+      <div class="title">สลิปเงินเดือน / Pay Slip</div><br>
+
+      รอบเงินเดือน: <span id="period"></span><br>
+      <span class="sub">Payroll Period</span><br><br>
+
+      วันที่ชำระ: <span id="paydate"></span><br>
+      <span class="sub">Payment Date</span><br><br>
+
+      เลขที่บัญชี: <span id="bank"></span><br>
+      <span class="sub">Bank Account</span>
     </div>
 
-    <div class="title">
-      <h2>สลิปเงินเดือน / Pay Slip</h2>
-      Period: <span id="period"></span><br>
-      Pay Date: <span id="paydate"></span>
-    </div>
   </div>
 
   <!-- TABLE -->
@@ -141,10 +148,10 @@ button{
 
     <!-- EARN -->
     <div class="col">
-      <div class="head">เงินได้ / Earnings</div>
+      <div class="head">เงินได้<br><span class="sub">Earnings</span></div>
 
-      <div class="row"><span>เงินเดือน</span><span id="salary"></span></div>
-      <div class="row"><span>โอที</span><span id="ot"></span></div>
+      <div class="row"><span>เงินเดือน/ค่าจ้าง</span><span id="salary"></span></div>
+      <div class="row"><span>ค่าล่วงเวลา</span><span id="ot"></span></div>
       <div class="row"><span>ค่าคอม</span><span id="com"></span></div>
       <div class="row"><span>โบนัส</span><span id="bonus"></span></div>
 
@@ -153,54 +160,82 @@ button{
 
     <!-- DEDUCT -->
     <div class="col">
-      <div class="head">รายการหัก / Deductions</div>
+      <div class="head">รายการหัก<br><span class="sub">Deductions</span></div>
 
       <div class="row"><span>ประกันสังคม</span><span id="social"></span></div>
       <div class="row"><span>ภาษี</span><span id="tax"></span></div>
       <div class="row"><span>กยศ</span><span id="loan"></span></div>
       <div class="row"><span>เงินสะสม</span><span id="saving"></span></div>
-      <div class="row"><span>อื่นๆ</span><span id="other"></span></div>
 
       <div class="total">รวม: <span id="deduct"></span></div>
     </div>
 
     <!-- SUMMARY -->
     <div class="col">
-      <div class="head">สรุป / Summary</div>
+      <div class="head">สรุป<br><span class="sub">Summary</span></div>
 
       <div class="row"><span>รวมเงินได้</span><span id="income2"></span></div>
       <div class="row"><span>รวมหัก</span><span id="deduct2"></span></div>
-      <div class="row"><b>สุทธิ</b><b id="net"></b></div>
+      <div class="row"><b>เงินได้สุทธิ</b><b id="net"></b></div>
     </div>
 
   </div>
 
-  <div class="footer">
-    หมายเหตุ: Salary is confidential
+  <!-- SIGN -->
+  <div class="sign">
+    ลายเซ็นผู้จ่ายเงิน __________________<br>
+    <span class="sub">Employer's Signature</span>
   </div>
 
-  <div class="sign">
-    Employer Signature __________________
+  <!-- FOOT -->
+  <div class="footer">
+    ข้อมูลเงินเดือนและค่าจ้างเป็นข้อมูลส่วนบุคคล ห้ามเปิดเผยโดยเด็ดขาดเอกสารนี้จะสมบูรณ์เมื่อมีลายเซ็นผู้มีอำนาจลงนามและตราประทับเท่านั้น<br>
+    Salary and wages are confidential information. Disclosure is strictly prohibited. This document is only valid with an authorized signature and company stamp.
   </div>
 
 </div>
 
 <div style="text-align:center;">
   <button onclick="downloadPDF()">📄 PDF</button>
-  <button onclick="sendEmail()">📧 Email</button>
 </div>
 
 <script>
 const d = JSON.parse(sessionStorage.getItem("empSlip") || {});
 
-// ===== render =====
+// ===== helper =====
 function f(n){ return Number(n||0).toLocaleString(); }
 
-document.getElementById("name").innerText = d.name + " ("+d.empCode+")";
-document.getElementById("pos").innerText = d.position || "-";
-document.getElementById("period").innerText = `${d.month}/${d.year}`;
-document.getElementById("paydate").innerText = new Date().toLocaleDateString();
+// ===== MONTH MAP =====
+const MONTH_THAI = [
+  "", "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
+  "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
+  "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+];
 
+// ===== DATE LOGIC =====
+const year = Number(d.year);
+const month = Number(d.month);
+
+const lastDay = new Date(year-543, month, 0).getDate();
+
+const monthName = MONTH_THAI[month];
+
+// ===== render header =====
+document.getElementById("name").innerText =
+  `${d.name} (${d.empCode})`;
+
+document.getElementById("pos").innerText = d.position || "-";
+
+document.getElementById("period").innerText =
+  `01-${lastDay} ${monthName} ${year}`;
+
+document.getElementById("paydate").innerText =
+  `${lastDay} ${monthName} ${year}`;
+
+document.getElementById("bank").innerText =
+  d.bank || "-";
+
+// ===== render money =====
 document.getElementById("salary").innerText = f(d.baseSalary);
 document.getElementById("ot").innerText = f(d.otPay);
 document.getElementById("com").innerText = f(d.commission);
@@ -210,10 +245,13 @@ document.getElementById("social").innerText = f(d.social);
 document.getElementById("tax").innerText = f(d.tax);
 document.getElementById("loan").innerText = f(d.loan);
 document.getElementById("saving").innerText = f(d.saving);
-document.getElementById("other").innerText = f(d.otherDeduct);
 
-const income = d.baseSalary + d.otPay + d.commission + d.bonus;
-const deduct = d.social + d.tax + d.loan + d.saving + d.otherDeduct;
+const income =
+  d.baseSalary + d.otPay + d.commission + d.bonus;
+
+const deduct =
+  d.social + d.tax + d.loan + d.saving;
+
 const net = income - deduct;
 
 document.getElementById("income").innerText = f(income);
@@ -224,9 +262,8 @@ document.getElementById("net").innerText = f(net);
 
 // ===== PDF =====
 function downloadPDF(){
-
   const filename =
-    `${d.year}_${d.month}_${d.empCode}_${d.name}.pdf`;
+    `${year}_${month}_${d.empCode}_${d.name}.pdf`;
 
   html2pdf(document.getElementById("slip"), {
     margin:0,
@@ -238,20 +275,6 @@ function downloadPDF(){
       orientation:'landscape'
     }
   });
-}
-
-// ===== EMAIL =====
-async function sendEmail(){
-
-  await fetch("YOUR_API_URL",{
-    method:"POST",
-    body: JSON.stringify({
-      action:"sendSlip",
-      data:d
-    })
-  });
-
-  alert("ส่งอีเมลแล้ว");
 }
 </script>
 
