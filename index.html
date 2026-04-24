@@ -9,9 +9,16 @@
 <style>
 body { font-family:sans-serif; text-align:center; padding:20px; background:#f5f5f5;}
 
-table { width:100%; max-width:1300px; margin:auto; border-collapse:collapse; background:white;}
-th,td { border:1px solid #ddd; padding:8px; font-size:14px;}
-th { background:#d9ead3;}
+table { 
+  width:100%; 
+  max-width:1300px; 
+  margin:auto; 
+  border-collapse:collapse; 
+  background:white;
+}
+
+th,td { border:1px solid #ddd; padding:8px;}
+th { background:#d9ead3; }
 
 th.deduct { background:#f4cccc; }
 th.total { background:#d9e2f3; }
@@ -27,6 +34,7 @@ button {
   border-radius:4px;
   margin:2px;
 }
+
 button:hover { background:#45a049; }
 
 #loading {
@@ -59,7 +67,7 @@ button:hover { background:#45a049; }
 </select>
 
 <button onclick="loadData()">โหลด</button>
-<button onclick="exportExcel()">📊 Export Excel</button>
+<button onclick="exportExcel()">📊 Export</button>
 
 <div id="loading">⏳ Loading...</div>
 
@@ -95,9 +103,14 @@ button:hover { background:#45a049; }
 </table>
 
 <script>
-const API_URL = "YOUR_API_URL";
+const API_URL = "https://script.google.com/macros/s/AKfycbyAjSm76ERjYrHZ3bqSU6nK7YtL5AkGnSiOz9ATI1L8S4SVtiBfiRyOzRXmlxeoHQIk/exec";
 let dataGlobal = [];
 
+window.onload = loadData;
+
+// ==========================
+// โหลดข้อมูล (เหมือนของคุณ + รองรับ dropdown)
+// ==========================
 async function loadData(){
 
   document.getElementById("loading").style.display="flex";
@@ -105,26 +118,55 @@ async function loadData(){
   const month = document.getElementById("month").value;
   const year = document.getElementById("year").value;
 
-  const res = await fetch(`${API_URL}?month=${month}&year=${year}`);
-  const json = await res.json();
+  try{
+    const res = await fetch(`${API_URL}?month=${month}&year=${year}`);
+    const json = await res.json();
 
-  dataGlobal = json.data || [];
+    const data = json.data || [];
+    const allDates = json.allDates || [];
 
-  renderTable(dataGlobal);
+    // 🔥 ของเดิมคุณ (สำคัญ OT)
+    sessionStorage.setItem("allDates", JSON.stringify(allDates));
+    sessionStorage.setItem("duplicates", JSON.stringify(json.duplicates || []));
+
+    dataGlobal = data;
+
+    renderTable(data);
+
+  }catch(err){
+    alert("โหลดข้อมูลผิดพลาด");
+  }
 
   document.getElementById("loading").style.display="none";
 }
 
+// ==========================
+// render table (เพิ่ม action แต่ไม่ลบของเดิม)
+// ==========================
 function renderTable(data){
 
   const tbody = document.getElementById("tableBody");
 
   tbody.innerHTML = data.map((d,i)=>{
 
-    const income = d.baseSalary + d.otPay + d.commission + d.bonus;
-    const deduct = d.social + d.loan + d.saving + d.late + d.electric + d.water + d.uniform + d.otherDeduct;
+    const income =
+      (d.baseSalary||0) +
+      (d.otPay||0) +
+      (d.commission||0) +
+      (d.bonus||0);
+
+    const deduct =
+      (d.social||0) +
+      (d.loan||0) +
+      (d.saving||0) +
+      (d.late||0) +
+      (d.electric||0) +
+      (d.water||0) +
+      (d.uniform||0) +
+      (d.otherDeduct||0);
+
     const net = income - deduct;
-    const transfer = net - d.tax;
+    const transfer = net - (d.tax||0);
 
     return `
     <tr>
@@ -138,6 +180,7 @@ function renderTable(data){
       <td>${f(d.social)}</td>
       <td>${f(d.loan)}</td>
       <td>${f(d.saving)}</td>
+
       <td>${f(d.late)}</td>
       <td>${f(d.electric)}</td>
       <td>${f(d.water)}</td>
@@ -152,19 +195,53 @@ function renderTable(data){
       <td><b>${f(transfer)}</b></td>
 
       <td>
-        <button onclick="viewSlip(${i})">👁️</button>
-        <button onclick="downloadSlip(${i})">💾</button>
-        <button onclick="sendEmail(${i})">📧</button>
+        <!-- 🔥 ของเดิม -->
+        <button onclick="goDetail(${i})">OT</button>
+
+        <!-- 🔥 เพิ่มใหม่ -->
+        <button onclick="viewSlip(${i})">Slip</button>
+        <button onclick="downloadSlip(${i})">PDF</button>
+        <button onclick="sendEmail(${i})">Mail</button>
       </td>
     </tr>`;
   }).join("");
 }
 
-function f(n){ return Number(n||0).toLocaleString(); }
+// ==========================
+// OT (ของเดิมคุณ)
+// ==========================
+function goDetail(i){
+  sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
+  window.location.href = "ot.html";
+}
 
-//////////////////////////////////////////////////
-// 📊 EXPORT EXCEL (ตรง table)
-//////////////////////////////////////////////////
+// ==========================
+// เพิ่มใหม่ (ไม่ทับของเดิม)
+// ==========================
+function viewSlip(i){
+  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
+  window.open("slip.html");
+}
+
+function downloadSlip(i){
+  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
+  window.open("slip.html?download=1");
+}
+
+async function sendEmail(i){
+  await fetch(API_URL,{
+    method:"POST",
+    body: JSON.stringify({
+      action:"sendEmail",
+      data: dataGlobal[i]
+    })
+  });
+  alert("ส่งเมลแล้ว");
+}
+
+// ==========================
+// export (เพิ่มใหม่)
+// ==========================
 function exportExcel(){
 
   const rows = dataGlobal.map(d=>{
@@ -186,10 +263,10 @@ function exportExcel(){
       "ค่าไฟ": d.electric,
       "ค่าน้ำ": d.water,
       "ค่าเสื้อ": d.uniform,
-      "หักอื่นๆ": d.otherDeduct,
-      "รวมเงินได้": income,
-      "รวมหัก": deduct,
-      "เงินสุทธิ": net,
+      "หักอื่น": d.otherDeduct,
+      "รวมเงิน": income,
+      "หัก": deduct,
+      "สุทธิ": net,
       "ภาษี": d.tax,
       "โอน": transfer
     };
@@ -199,43 +276,11 @@ function exportExcel(){
   const wb = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(wb, ws, "Payroll");
-
   XLSX.writeFile(wb, "Payroll.xlsx");
 }
 
-//////////////////////////////////////////////////
-// 👁️ ดูสลิป
-//////////////////////////////////////////////////
-function viewSlip(i){
-  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
-  window.open("slip.html");
-}
+function f(n){ return Number(n||0).toLocaleString(); }
 
-//////////////////////////////////////////////////
-// 💾 โหลด PDF
-//////////////////////////////////////////////////
-function downloadSlip(i){
-  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
-  window.open("slip.html?download=1");
-}
-
-//////////////////////////////////////////////////
-// 📧 ส่ง email
-//////////////////////////////////////////////////
-async function sendEmail(i){
-
-  const emp = dataGlobal[i];
-
-  await fetch(API_URL, {
-    method:"POST",
-    body: JSON.stringify({
-      action:"sendEmail",
-      data: emp
-    })
-  });
-
-  alert("ส่งอีเมลแล้ว");
-}
 </script>
 
 </body>
