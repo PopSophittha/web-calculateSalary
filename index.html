@@ -1,3 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Payroll</title>
+
+<style>
+body { font-family:sans-serif; text-align:center; padding:20px; background:#f5f5f5;}
+table { width:100%; max-width:1000px; margin:auto; border-collapse:collapse; background:white;}
+th,td { border:1px solid #ddd; padding:8px;}
+th { background:#4CAF50; color:white;}
+
+#loading {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(255,255,255,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>💰 เงินเดือนทั้งร้าน</h2>
+
+<div id="loading">⏳ กำลังโหลด...</div>
+
 <table>
 <thead>
 <tr>
@@ -26,6 +57,30 @@
 </table>
 
 <script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzaM-kg2Xe5JAJwAbu81n-ZYBFmHUNFeKTd_Eikb99EO3ZLzz2uHT1T2AMwLxmkJ8Gl/exec";
+
+let dataGlobal = [];
+
+window.onload = loadData;
+
+async function loadData(){
+
+  const res = await fetch(`${API_URL}?month=เมษายน`);
+  const json = await res.json();
+
+  const data = json.data || [];
+  const allDates = json.allDates || [];
+
+  sessionStorage.setItem("allDates", JSON.stringify(allDates));
+  sessionStorage.setItem("duplicates", JSON.stringify(json.duplicates || []));
+
+  dataGlobal = data;
+
+  renderTable(data);
+
+  document.getElementById("loading").style.display = "none";
+}
+
 function renderTable(data){
 
   window.dataGlobal = data;
@@ -81,4 +136,16 @@ function renderTable(data){
     </tr>`;
   }).join("");
 }
+
+function goDetail(i){
+  sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
+  window.location.href = "ot.html";
+}
+
+function format(n){
+  return Number(n||0).toLocaleString();
+}
 </script>
+
+</body>
+</html>
