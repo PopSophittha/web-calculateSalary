@@ -1,90 +1,84 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Payroll</title>
+<table>
+<thead>
+<tr>
+<th>ชื่อ</th>
+<th>เงินเดือน</th>
+<th>โอที</th>
+<th>ค่าคอม</th>
+<th>โบนัส</th>
+<th>ประกันสังคม</th>
+<th>กยศ</th>
+<th>เงินสะสม</th>
+<th>มาสาย</th>
+<th>ค่าไฟ</th>
+<th>ค่าน้ำ</th>
+<th>ค่าเสื้อ</th>
+<th>หักอื่นๆ</th>
+<th>รวมเงินได้</th>
+<th>รวมหัก</th>
+<th>เงินได้สุทธิ</th>
+<th>หัก ณ ที่จ่าย</th>
+<th>ยอดโอนสุทธิ</th>
+</tr>
+</thead>
 
-<style>
-body { font-family:sans-serif; text-align:center; padding:20px; background:#f5f5f5;}
-table { width:100%; max-width:1000px; margin:auto; border-collapse:collapse; background:white;}
-th,td { border:1px solid #ddd; padding:8px;}
-th { background:#4CAF50; color:white;}
-
-#loading {
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(255,255,255,0.8);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:20px;
-}
-</style>
-</head>
-
-<body>
-
-<h2>💰 เงินเดือนทั้งร้าน</h2>
-
-<div id="loading">⏳ กำลังโหลด...</div>
-
-<table id="table"></table>
+<tbody id="tableBody"></tbody>
+</table>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzaM-kg2Xe5JAJwAbu81n-ZYBFmHUNFeKTd_Eikb99EO3ZLzz2uHT1T2AMwLxmkJ8Gl/exec";
-
-let dataGlobal = [];
-
-window.onload = loadData;
-
-async function loadData(){
-
-  const res = await fetch(`${API_URL}?month=เมษายน`);
-  const json = await res.json();
-
-  const data = json.data || [];
-  const allDates = json.allDates || [];
-
-  sessionStorage.setItem("allDates", JSON.stringify(allDates));
-  sessionStorage.setItem("duplicates", JSON.stringify(json.duplicates || []));
-
-  dataGlobal = data;
-
-  renderTable(data);
-
-  document.getElementById("loading").style.display = "none";
-}
-
 function renderTable(data){
-  document.getElementById("table").innerHTML =
-  `<tr>
-    <th>ชื่อ</th>
-    <th>ชั่วโมง</th>
-    <th>OT</th>
-    <th>ยอดขาย</th>
-    <th>รวม</th>
-  </tr>` +
-  data.map((d,i)=>`
-    <tr onclick="goDetail(${i})">
+
+  window.dataGlobal = data;
+
+  const tbody = document.getElementById("tableBody");
+
+  tbody.innerHTML = data.map(d=>{
+
+    const income =
+      d.baseSalary +
+      d.otPay +
+      d.commission +
+      d.bonus;
+
+    const deduct =
+      d.social +
+      d.loan +
+      d.saving +
+      d.late +
+      d.electric +
+      d.water +
+      d.uniform +
+      d.otherDeduct;
+
+    const net = income - deduct;
+    const transfer = net - d.tax;
+
+    return `
+    <tr>
       <td>${d.name}</td>
-      <td>${d.hours}</td>
-      <td>${d.otHours}</td>
-      <td>${format(d.sales)}</td>
-      <td>${format(d.total)}</td>
-    </tr>
-  `).join("");
-}
 
-function goDetail(i){
-  sessionStorage.setItem("empDetail", JSON.stringify(dataGlobal[i]));
-  window.location.href = "ot.html";
-}
+      <td>${d.baseSalary.toLocaleString()}</td>
+      <td>${d.otPay.toLocaleString()}</td>
+      <td>${d.commission.toLocaleString()}</td>
+      <td>${d.bonus.toLocaleString()}</td>
 
-function format(n){
-  return Number(n||0).toLocaleString();
+      <td>${d.social.toLocaleString()}</td>
+      <td>${d.loan.toLocaleString()}</td>
+      <td>${d.saving.toLocaleString()}</td>
+
+      <td>${d.late.toLocaleString()}</td>
+      <td>${d.electric.toLocaleString()}</td>
+      <td>${d.water.toLocaleString()}</td>
+      <td>${d.uniform.toLocaleString()}</td>
+      <td>${d.otherDeduct.toLocaleString()}</td>
+
+      <td><b>${income.toLocaleString()}</b></td>
+      <td>${deduct.toLocaleString()}</td>
+      <td>${net.toLocaleString()}</td>
+
+      <td>${d.tax.toLocaleString()}</td>
+      <td><b>${transfer.toLocaleString()}</b></td>
+    </tr>`;
+  }).join("");
 }
 </script>
-
-</body>
-</html>
