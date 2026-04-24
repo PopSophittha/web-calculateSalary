@@ -218,8 +218,6 @@ function renderTable(data){
 
         <!-- 🔥 เพิ่มใหม่ -->
         <button onclick="viewSlip(${i})">Slip</button>
-        <button onclick="downloadSlip(${i})">PDF</button>
-        <button onclick="sendEmail(${i})">Mail</button>
       </td>
     </tr>`;
   }).join("");
@@ -240,23 +238,7 @@ function viewSlip(i){
   sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
   window.open("slip.html");
 }
-
-function downloadSlip(i){
-  sessionStorage.setItem("empSlip", JSON.stringify(dataGlobal[i]));
-  window.open("slip.html?download=1");
-}
-
-async function sendEmail(i){
-  await fetch(API_URL,{
-    method:"POST",
-    body: JSON.stringify({
-      action:"sendEmail",
-      data: dataGlobal[i]
-    })
-  });
-  alert("ส่งเมลแล้ว");
-}
-
+  
 // ==========================
 // export (เพิ่มใหม่)
 // ==========================
