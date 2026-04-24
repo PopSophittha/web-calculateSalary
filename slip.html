@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Slip</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body{ font-family:sans-serif; padding:20px; }
+.card{
+  max-width:600px;
+  margin:auto;
+  border:1px solid #ddd;
+  padding:20px;
+  background:white;
+}
+h2{text-align:center;}
+button{ margin:5px; padding:8px 12px; }
+</style>
+</head>
+
+<body>
+
+<div class="card" id="slip">
+  <h2>สลิปเงินเดือน</h2>
+  <div id="content"></div>
+</div>
+
+<div style="text-align:center;">
+  <button onclick="downloadPDF()">📄 PDF</button>
+  <button onclick="sendEmail()">📧 Email</button>
+</div>
+
+<script>
+const data = JSON.parse(sessionStorage.getItem("empSlip") || "{}");
+
+document.getElementById("content").innerHTML = `
+<p>ชื่อ: ${data.name}</p>
+<p>เงินเดือน: ${f(data.baseSalary)}</p>
+<p>โอที: ${f(data.otPay)}</p>
+<p>ค่าคอม: ${f(data.commission)}</p>
+<p>โบนัส: ${f(data.bonus)}</p>
+<hr>
+<p><b>สุทธิ: ${f(data.total)}</b></p>
+`;
+
+function f(n){ return Number(n||0).toLocaleString(); }
+
+// ================== PDF ==================
+function downloadPDF(){
+
+  const year = new Date().getFullYear()+543;
+  const month = new Date().getMonth()+1;
+
+  const filename = `${year}_${month}_${data.empCode}_${data.name}.pdf`;
+
+  html2pdf().from(document.getElementById("slip")).save(filename);
+}
+
+// ================== EMAIL ==================
+async function sendEmail(){
+
+  await fetch("YOUR_API_URL",{
+    method:"POST",
+    body: JSON.stringify({
+      action:"sendSlip",
+      data
+    })
+  });
+
+  alert("ส่งอีเมลแล้ว");
+}
+</script>
+
+</body>
+</html>
