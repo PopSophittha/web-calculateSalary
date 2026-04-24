@@ -8,8 +8,8 @@
 
 <style>
 @page {
-  size: A5 portrait;
-  margin: 10mm;
+  size: A5 landscape;
+  margin: 8mm;
 }
 
 body{
@@ -18,11 +18,11 @@ body{
 }
 
 .paper{
-  width: 148mm;
-  height: 210mm;
+  width: 210mm;
+  height: 148mm;
   background:white;
   margin:auto;
-  padding:12mm;
+  padding:10mm;
   box-sizing:border-box;
   position:relative;
 }
@@ -30,20 +30,12 @@ body{
 .header{
   display:flex;
   justify-content:space-between;
-}
-
-.left{
-  font-size:14px;
-}
-
-.right{
-  text-align:right;
   font-size:14px;
 }
 
 .logo{
   position:absolute;
-  top:12mm;
+  top:10mm;
   left:50%;
   transform:translateX(-50%);
 }
@@ -53,13 +45,12 @@ body{
 }
 
 .title{
-  font-size:20px;
-  font-weight:bold;
+  text-align:right;
 }
 
-.sub{
-  font-size:12px;
-  color:#444;
+.title h2{
+  margin:0;
+  font-size:20px;
 }
 
 .info{
@@ -71,8 +62,8 @@ body{
 
 .table{
   margin-top:15px;
-  border:1px solid #000;
   display:flex;
+  border:1px solid #000;
 }
 
 .col{
@@ -85,40 +76,39 @@ body{
 }
 
 .head{
+  text-align:center;
   border-bottom:1px solid #000;
   padding:5px;
-  text-align:center;
   font-weight:bold;
-  font-size:14px;
 }
 
 .row{
   display:flex;
   justify-content:space-between;
-  padding:4px 6px;
+  padding:4px 8px;
   font-size:13px;
 }
 
 .total{
   border-top:1px solid #000;
-  padding:6px;
+  padding:6px 8px;
   font-weight:bold;
 }
 
 .footer{
-  margin-top:20px;
+  margin-top:15px;
   font-size:12px;
 }
 
 .sign{
-  margin-top:20px;
-  display:flex;
-  justify-content:flex-end;
+  margin-top:15px;
+  text-align:right;
 }
 
 button{
-  margin-top:10px;
+  margin:10px;
   padding:8px 12px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -129,9 +119,9 @@ button{
 
   <!-- HEADER -->
   <div class="header">
-    <div class="left">
+    <div>
       <b>บริษัท มันตา ฟาร์มาซี จำกัด</b><br>
-      Emp. name (Code): <span id="name"></span><br>
+      Emp: <span id="name"></span><br>
       Position: <span id="pos"></span>
     </div>
 
@@ -139,41 +129,42 @@ button{
       <img src="https://drive.google.com/uc?id=1ekxMr7tPhN8ZdNRcS2gF8AQjVEBrqvS1">
     </div>
 
-    <div class="right">
-      <div class="title">สลิปเงินเดือน / Pay Slip</div>
-      Payroll Period: <span id="period"></span><br>
-      Payment Date: <span id="paydate"></span>
+    <div class="title">
+      <h2>สลิปเงินเดือน / Pay Slip</h2>
+      Period: <span id="period"></span><br>
+      Pay Date: <span id="paydate"></span>
     </div>
   </div>
 
   <!-- TABLE -->
   <div class="table">
 
-    <!-- Earnings -->
+    <!-- EARN -->
     <div class="col">
       <div class="head">เงินได้ / Earnings</div>
 
       <div class="row"><span>เงินเดือน</span><span id="salary"></span></div>
-      <div class="row"><span>ค่าล่วงเวลา</span><span id="ot"></span></div>
+      <div class="row"><span>โอที</span><span id="ot"></span></div>
       <div class="row"><span>ค่าคอม</span><span id="com"></span></div>
       <div class="row"><span>โบนัส</span><span id="bonus"></span></div>
 
       <div class="total">รวม: <span id="income"></span></div>
     </div>
 
-    <!-- Deduct -->
+    <!-- DEDUCT -->
     <div class="col">
       <div class="head">รายการหัก / Deductions</div>
 
       <div class="row"><span>ประกันสังคม</span><span id="social"></span></div>
       <div class="row"><span>ภาษี</span><span id="tax"></span></div>
       <div class="row"><span>กยศ</span><span id="loan"></span></div>
+      <div class="row"><span>เงินสะสม</span><span id="saving"></span></div>
       <div class="row"><span>อื่นๆ</span><span id="other"></span></div>
 
       <div class="total">รวม: <span id="deduct"></span></div>
     </div>
 
-    <!-- Summary -->
+    <!-- SUMMARY -->
     <div class="col">
       <div class="head">สรุป / Summary</div>
 
@@ -184,7 +175,6 @@ button{
 
   </div>
 
-  <!-- FOOT -->
   <div class="footer">
     หมายเหตุ: Salary is confidential
   </div>
@@ -197,16 +187,18 @@ button{
 
 <div style="text-align:center;">
   <button onclick="downloadPDF()">📄 PDF</button>
+  <button onclick="sendEmail()">📧 Email</button>
 </div>
 
 <script>
-const d = JSON.parse(sessionStorage.getItem("empSlip") || "{}");
+const d = JSON.parse(sessionStorage.getItem("empSlip") || {});
 
+// ===== render =====
 function f(n){ return Number(n||0).toLocaleString(); }
 
 document.getElementById("name").innerText = d.name + " ("+d.empCode+")";
 document.getElementById("pos").innerText = d.position || "-";
-document.getElementById("period").innerText = d.month + "/" + d.year;
+document.getElementById("period").innerText = `${d.month}/${d.year}`;
 document.getElementById("paydate").innerText = new Date().toLocaleDateString();
 
 document.getElementById("salary").innerText = f(d.baseSalary);
@@ -217,27 +209,49 @@ document.getElementById("bonus").innerText = f(d.bonus);
 document.getElementById("social").innerText = f(d.social);
 document.getElementById("tax").innerText = f(d.tax);
 document.getElementById("loan").innerText = f(d.loan);
+document.getElementById("saving").innerText = f(d.saving);
 document.getElementById("other").innerText = f(d.otherDeduct);
 
 const income = d.baseSalary + d.otPay + d.commission + d.bonus;
-const deduct = d.social + d.tax + d.loan + d.otherDeduct;
+const deduct = d.social + d.tax + d.loan + d.saving + d.otherDeduct;
 const net = income - deduct;
 
 document.getElementById("income").innerText = f(income);
-document.getElementById("deduct").innerText = f(deduct);
 document.getElementById("income2").innerText = f(income);
+document.getElementById("deduct").innerText = f(deduct);
 document.getElementById("deduct2").innerText = f(deduct);
 document.getElementById("net").innerText = f(net);
 
+// ===== PDF =====
 function downloadPDF(){
-  const filename = `${d.year}_${d.month}_${d.empCode}_${d.name}.pdf`;
+
+  const filename =
+    `${d.year}_${d.month}_${d.empCode}_${d.name}.pdf`;
 
   html2pdf(document.getElementById("slip"), {
     margin:0,
     filename,
     html2canvas:{scale:2},
-    jsPDF:{unit:'mm', format:'a5'}
+    jsPDF:{
+      unit:'mm',
+      format:'a5',
+      orientation:'landscape'
+    }
   });
+}
+
+// ===== EMAIL =====
+async function sendEmail(){
+
+  await fetch("YOUR_API_URL",{
+    method:"POST",
+    body: JSON.stringify({
+      action:"sendSlip",
+      data:d
+    })
+  });
+
+  alert("ส่งอีเมลแล้ว");
 }
 </script>
 
